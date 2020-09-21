@@ -11,3 +11,5 @@ For more about H2O: https://www.h2o.ai/
 
 ## Brief
 By the end we will be able to determine customer responses and oppurtunities. This helps to retain and grow more profitable customers.
+
+Any queries with the code? Feel free to contribute or email me at - thiyagarajannarmatha@gmail.com
