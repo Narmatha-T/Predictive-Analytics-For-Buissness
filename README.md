@@ -2,7 +2,7 @@
 This project is a data-driven approach to predict the success of bank telemarketing using automatic machine learning (AutoML) with H2O in R.
 The data files necessary for this project is attached in .xlsx which is publically available in UCI Machine Learning Repositiory.
 
-For more about H2O: https://www.h2o.ai/
+For more about H2O:https://www.h2o.ai/
 
 ## Objectives
 1. Apply machine learning and predictive analytics to solve a business problem
