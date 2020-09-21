@@ -1,0 +1,94 @@
+```{r}
+# To Import Libraries
+library(tidyverse)
+library(readxl)
+library(h2o)
+```
+
+```{r}
+# To Read the Excel Sheets
+path   <- "UCI_bank_marketing.xlsx"
+sheets <- excel_sheets(path)
+```
+
+
+```{r}
+# Explore Data in each Sheet
+sheets %>%
+    map(~ read_excel(path  = path, sheet = .)) %>%
+    set_names(sheets)
+```
+
+
+```{r}
+# Join Data by ID(unique Column)
+data_joined_tbl <- sheets[4:7] %>%
+    map(~ read_excel(path = path, sheet = .)) %>%
+    reduce(left_join)
+```
+
+```{r}
+# Start H2O Cluster 
+h2o.init(max_mem_size = "6g")
+```
+
+```{r}
+# Data Preparation
+data_joined_tbl <- data_joined_tbl %>% 
+    mutate_if(is.character, as.factor)
+
+train <- as.h2o(data_joined_tbl)
+
+h2o.describe(train)
+
+y <- "TERM_DEPOSIT"
+
+x <- setdiff(names(train), c(y, "ID"))
+```
+
+```{r}
+# H2O AutoML Training -- [Takes some time]
+
+aml <- h2o.automl(
+    y = y, 
+    x = x, 
+    training_frame = train,
+    project_name = "term_deposit",
+    max_runtime_secs = 300,
+    balance_classes = TRUE,
+    #max_models = 10,
+    seed = 1)
+```
+
+```{r}
+# View AutoML Leaderboard
+lb <- aml@leaderboard
+
+print(lb)
+
+print(lb, n = nrow(lb))
+```
+
+```{r}
+# Ensemble Exploration -- [could be different models] 
+
+model_ids <- as.data.frame(aml@leaderboard$model_id)[1]
+se <- h2o.getModel(grep("StackedEnsemble_AllModels", model_ids, value = TRUE)[1])
+metalearner <- h2o.getModel(se@model$metalearner$name)
+
+h2o.varimp(metalearner) #shows the analysed data
+
+h2o.varimp_plot(metalearner) #shows the analysed data is graph
+```
+
+```{r}
+# Baselearner Variable Importance 
+
+xgb <- h2o.getModel(grep("XGBoost", model_ids, value = TRUE)[1])
+
+h2o.varimp(xgb)
+
+h2o.varimp_plot(xgb) 
+```
+
+
